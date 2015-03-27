@@ -8,7 +8,6 @@
 #include <ctime>
 #include "gl/glut.h"   // - An interface and windows
 #include "gl/glm/glm.hpp"
-// #include <vector>
 #include "visuals.h"   // Header file for our OpenGL functions
 #include "colors.h"
 
@@ -17,6 +16,9 @@ using namespace glm;
 
 
 model md;
+int LifeRemaining = 3;
+int ModeSelect = 0;
+static int GameStarted = 0;
 static int asteroidFlag = 0;
 static int AsteroidSize_1 =5;
 static int AsteroidSize_2 =5;
@@ -234,7 +236,6 @@ void asteroid()
 	glRotatef(rotx, 0, rotx, 1);
 	glColor3fv(OrangeRed);
 	DisplayModel(md);
-	//glutSolidSphere(AsteroidSize_1,AsteroidSize_2,AsteroidSize_3);
 	glPopMatrix();
 }
 
@@ -296,13 +297,32 @@ void stars(void) //Create mini-Suns around the plane pseudo-randomly in every di
 	}
 }
 
-void pow(const char *str,float size)
+void Lives()
+{
+    char life[10];
+	sprintf(life, "%d", LifeRemaining);
+	char score[30] = "life:";
+	strcat(score,life);
+	glPushMatrix();
+	glScalef(0.015,0.015,0.001);
+	glTranslatef(-3100,3000,0);
+	glColor3fv(White);
+	for (int i=0;i<strlen(score);i++)
+	  glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN ,score[i]);
+	glPopMatrix();
+
+}
+
+void PrintText(const char *str,float size,const char *color)
 {
 
 	glPushMatrix();
 	glTranslatef(-TranslateX,-TranslateY,15);
 	glScalef(size,size,size);
-	glColor3fv(Red);
+	if(!strcmp(color,"Red"))
+		glColor3fv(Red);
+	else if(!strcmp(color,"White"))
+		glColor3fv(White);
 	for (int i=0;i<strlen(str);i++)
 	  glutStrokeCharacter(GLUT_STROKE_ROMAN,str[i]);
 	glPopMatrix();
@@ -358,30 +378,90 @@ void Render()
 	glShadeModel (GL_FLAT);
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity();
+
+	Lives();
 	glRotatef(RotateY, 0, 1, 0); //Change camera Y view when pressing  i || k
 	glRotatef(RotateX, 1, 0, 0); //Change camera X view when pressing  j || l
 	srand (time(NULL));
-	sun(); //create sun before rotations and movements
+
 	glTranslatef(TranslateX, TranslateY, 0); //Pseudo movement in X and Y axis when pressing WASD keys
+	sun(); //create sun before rotations and movements
 	if(asteroidFlag)
 	{
 		asteroid();	
 		if(sqrt((AsteroidX+TranslateX)*(AsteroidX+TranslateX) + (AsteroidY + TranslateY	)*(AsteroidY + TranslateY) < 350))
 		{
 			ColisionFlag = 1;
+			LifeRemaining--;
 			asteroidFlag = 0;
 		}
 	}
 	else if(ColisionFlag)
 	{
-		asteroid();
-		pow("POW",PowSize);
+		if(!LifeRemaining)
+		{
+			glPushMatrix();
+			glTranslatef(-15,30,0);
+			PrintText("Game Over",0.04,"Red");
+			glPopMatrix();
+			asteroid();
+		}
+		else
+		{
+			glPushMatrix();
+			glTranslatef(-10,20,0);
+			PrintText("POW",PowSize,"Red");
+			glPopMatrix();
+			asteroid();
+		}
 	}
 	stars(); //create starts
-	plane(TranslateX, TranslateY); //Plane must remain in the center so we must negate env movement
-	glTranslatef(50, 50, 50);
-	glScalef(50,50,50);
-	//DisplayModel(md);
+	if(GameStarted)
+	{
+		plane(TranslateX, TranslateY); //Plane must remain in the center so we must negate env movement
+		glTranslatef(50, 50, 50);
+		glScalef(50,50,50);
+	}
+	else
+	{
+		glPushMatrix();
+		glTranslatef(-15,30,0);
+		PrintText("Mode Select:",0.04,"White");
+		glTranslatef(0,-10,0);
+		if(ModeSelect == 0)
+		{
+			glPushMatrix();
+			glTranslatef(-2,1,0);
+			glColor3fv(Green);
+			glutSolidSphere(1, 20, 20);
+			glPopMatrix();
+			LifeRemaining = 10;
+		}
+		PrintText("Easy",0.02,"White");
+		glTranslatef(0,-10,0);
+		if(ModeSelect == 1)
+		{
+			glPushMatrix();
+			glTranslatef(-2,1,0);
+			glColor3fv(OrangeRed);
+			glutSolidSphere(1, 20, 20);
+			glPopMatrix();
+			LifeRemaining = 3;
+		}
+		PrintText("Medium",0.02,"White");
+		glTranslatef(0,-10,0);
+		if(ModeSelect == 2)
+		{
+			glPushMatrix();
+			glTranslatef(-2,1,0);
+			glColor3fv(Red);
+			glutSolidSphere(1, 20, 20);
+			glPopMatrix();
+			LifeRemaining = 1;
+		}
+		PrintText("Hard",0.02,"White");
+		glPopMatrix();
+	}
 	glutSwapBuffers();
 }
 
@@ -389,7 +469,7 @@ void Render()
 
 void Idle()
 {
-	if(!Pause)
+	if(!Pause && GameStarted)
 	{
 		rotx += fanSpeed; 	//Helics rotation engine
 		//PseudoSpeed += 3.0;
@@ -415,11 +495,13 @@ void Idle()
 			{
 				if(PowSize >= 0.18)
 				{
+					if(!LifeRemaining)
+						exit(0);
 					resetAsteroid();
 					ColisionFlag = 0;
 					PowSize = 0.01;
 				}
-				PowSize+=0.006;
+				PowSize+=0.003;
 			}
 			else if(rand()%5 == 4)
 			{
@@ -439,32 +521,35 @@ void Keyboard(unsigned char key, int x, int y)
 {
 	if(key == 'p' || key == 'P')
 		Pause = 1 - Pause;		//Toggle PauseS
-	switch (key)
+	if (GameStarted)
 	{
-	case 'q':
-	case 'Q':
-		exit(0);
-		break;
-	case 'j':
-	case 'J':
-		RotateY += 2;			//Camera manipulation
-		break;
-	case 'l':
-	case 'L':
-		RotateY -= 2;			//Camera manipulation
-		break;
-	case 'i':
-	case 'I':
-		RotateX += 2;			//Camera manipulation
-		break;
-	case 'k':
-	case 'K':
-		RotateX -= 2;			//Camera manipulation
-		break;
-	default:
-		break;
+		switch (key)
+		{
+		case 'q':
+		case 'Q':
+			exit(0);
+			break;
+		case 'j':
+		case 'J':
+			RotateY += 2;			//Camera manipulation
+			break;
+		case 'l':
+		case 'L':
+			RotateY -= 2;			//Camera manipulation
+			break;
+		case 'i':
+		case 'I':
+			RotateX += 2;			//Camera manipulation
+			break;
+		case 'k':
+		case 'K':
+			RotateX -= 2;			//Camera manipulation
+			break;
+		default:
+			break;
+		}
 	}
-	if(!Pause && !ColisionFlag)
+	if(!Pause && !ColisionFlag && GameStarted)
 	{
 		switch(key)
 		{
@@ -491,6 +576,26 @@ void Keyboard(unsigned char key, int x, int y)
 				TranslateX -= 0.9f;	//Move SideWays by 0.9
 				if (Xtilt >= -35)	//Tilt plane camera-righr with a maximum 36.8% angle
 					Xtilt -= 2;
+				break;
+		}
+	}
+	else if(!GameStarted)
+	{
+		switch(key)
+		{
+			case 'w':
+			case 'W':
+				if(!ModeSelect)
+					ModeSelect = 2;
+				else
+					ModeSelect--;
+				break;
+			case 's':
+			case 'S':
+				ModeSelect=(ModeSelect+1)%3;
+				break;
+			case 13:
+				GameStarted = 1;
 				break;
 		}
 	}
