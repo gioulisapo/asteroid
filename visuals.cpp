@@ -1,4 +1,3 @@
-#include <GL/glew.h>
 #include <stdio.h>     // - Just for some ASCII messages
 #include <stdlib.h>     /* srand, rand */
 #include <string.h>
