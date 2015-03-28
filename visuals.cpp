@@ -18,6 +18,7 @@ using namespace glm;
 model md;
 int LifeRemaining = 3;
 int ModeSelect = 0;
+int AsteroidSpeed;
 static int GameStarted = 0;
 static int asteroidFlag = 0;
 static int AsteroidSize_1 =5;
@@ -91,7 +92,7 @@ void plane(float Xpos, float Ypos)
 	glRotatef(-90, 0, 1, 0); //So as the back of the plane is originaly visible to the player
 	glRotatef(Xtilt, 1, 0, 0); //Tilt on X axis when turn
 	glRotatef(-Ytilt, 0, 0, 1); //Tilt on Y axis when turn
-	glScalef(0.3, 0.8, 1); //Plane was initaly designe larger than needed
+	glScalef(0.3, 0.7, 0.5); //Plane was initaly designe larger than needed
 
 	//Body
 	glPushMatrix();
@@ -446,7 +447,7 @@ void Render()
 			glColor3fv(OrangeRed);
 			glutSolidSphere(1, 20, 20);
 			glPopMatrix();
-			LifeRemaining = 3;
+			LifeRemaining = 5;
 		}
 		PrintText("Medium",0.02,"White");
 		glTranslatef(0,-10,0);
@@ -457,7 +458,7 @@ void Render()
 			glColor3fv(Red);
 			glutSolidSphere(1, 20, 20);
 			glPopMatrix();
-			LifeRemaining = 1;
+			LifeRemaining = 3;
 		}
 		PrintText("Hard",0.02,"White");
 		glPopMatrix();
@@ -483,9 +484,9 @@ void Idle()
 			Xtilt += 0.2;		//...
 		if(asteroidFlag)
 		{
-			transz+=0.5;
-			transy-=0.5;
-			transx+=0.5;
+			transz+=AsteroidSpeed;
+			transy-=AsteroidSpeed;
+			transx+=AsteroidSpeed;
 			if(transy < -110)
 				resetAsteroid();
 		}
@@ -514,7 +515,7 @@ void Idle()
 			}
 		}
 	}
-	glutPostRedisplay();		//Re display changes
+	glutPostRedisplay();//Re display changes
 }
 
 void Keyboard(unsigned char key, int x, int y)
@@ -596,6 +597,15 @@ void Keyboard(unsigned char key, int x, int y)
 				break;
 			case 13:
 				GameStarted = 1;
+				switch(ModeSelect)
+				{
+					case 0:
+						AsteroidSpeed = 0,5;
+					case 1:
+						AsteroidSpeed = 0,7;
+					case 2:
+						AsteroidSpeed = 1;
+				}
 				break;
 		}
 	}
