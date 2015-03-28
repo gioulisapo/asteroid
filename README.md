@@ -1,11 +1,11 @@
 <a href="https://youtu.be/mfOPFKg-t1Q">Youtube Link</a><br><br>
 <strong>OpenGL animation project. Some features include:</strong><br>
 <ul>
-  <li>Simple Collision Detection;</li>
+  <li>Simple Collision Detection</li>
   <li>Game Diffulcty Menu</li>
   <li>All Shapes created from glew primitives</li>
-  <li>Load object from .obj file;</li>
-  <li>MultiKeypress detection;</li>
+  <li>Load object from .obj file</li>
+  <li>MultiKeypress detection</li>
 </ul>
 <strong>Controls</strong>
 <ul>
