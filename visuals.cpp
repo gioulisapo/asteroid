@@ -22,9 +22,7 @@ int ModeSelect = 0;
 float AsteroidSpeed;
 static int GameStarted = 0;
 static int asteroidFlag = 0;
-static int AsteroidSize_1 =5;
-static int AsteroidSize_2 =5;
-static int AsteroidSize_3 =5;
+static float AsteroidSize =0.002;
 static int Pause = 0;
 static int ActiveasteroidFlag = 0;
 static float PowSize = 0.01;
@@ -136,6 +134,7 @@ void resetAsteroid()
 	transz = 0;
 	transy = 0;
 	transx = 0;
+	AsteroidSize = 0.003;
 	asteroidFlag = 0;
 }
 
@@ -317,7 +316,7 @@ void asteroid()
 	AsteroidX = -Originalx -50 + transx;
 	AsteroidY = -Originaly+ 50+ transy;
 	AsteroidZ = -50 + transz;
-	glTranslatef(AsteroidX,AsteroidY,AsteroidZ); //Move Sun to the top right
+	glTranslatef(AsteroidX,AsteroidY,AsteroidZ);
 	glRotatef(rotx, 0, rotx, 1);
 	glColor3fv(OrangeRed);
 	DisplayModel(md);
@@ -474,7 +473,7 @@ void Render()
 	if(asteroidFlag)
 	{
 		asteroid();	
-		if(sqrt((AsteroidX+TranslateX)*(AsteroidX+TranslateX) + (AsteroidY + TranslateY	)*(AsteroidY + TranslateY) < 350))
+		if(sqrt((AsteroidX+TranslateX)*(AsteroidX+TranslateX) + (AsteroidY + TranslateY	)*(AsteroidY + TranslateY) < 150))
 		{
 			ColisionFlag = 1;
 			LifeRemaining--;
@@ -500,7 +499,7 @@ void Render()
 			asteroid();
 		}
 	}
-	stars(); //create starts
+	stars();
 	if(GameStarted)
 	{
 		plane(TranslateX, TranslateY); //Plane must remain in the center so we must negate env movement
@@ -593,9 +592,6 @@ void Idle()
 			else if(rand()%5 == 4)
 			{
 				asteroidFlag = 1;
-				AsteroidSize_1 = 5+rand()%3;
-				AsteroidSize_1 = 5+rand()%5;
-				AsteroidSize_1 = 5+rand()%10;
 				Originalx = TranslateX;
 				Originaly = TranslateY;
 			}
@@ -665,9 +661,10 @@ void DisplayModel(model md)
 {
 
 	glPushMatrix();
-	glScalef(0.01, 0.01, 0.01);
+	AsteroidSize += (0.0002*AsteroidSpeed);
+	glScalef(AsteroidSize, AsteroidSize, AsteroidSize);
 	glBegin(GL_TRIANGLES);
-
+	glColor3fv(Gray);
 	for (int i = 0; i < 18240; i++)
 	{
 		glVertex3f(md.obj_points[md.obj_faces[i].vtx[0] - 1].x, md.obj_points[md.obj_faces[i].vtx[0] - 1].y, md.obj_points[md.obj_faces[i].vtx[0] - 1].z);
