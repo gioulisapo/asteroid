@@ -16,6 +16,7 @@ using namespace glm;
 
 
 model md;
+bool* keyStates = new bool[256]; // Create an array of boolean values of length 256 (0-255)
 int LifeRemaining = 3;
 int ModeSelect = 0;
 int AsteroidSpeed;
@@ -46,6 +47,84 @@ static float transz = 0;
 static float rotx = 0; //Var for helics rotation animation
 static float fanSpeed = 14.5; //Rotation Speed of the helics
 static float SunPos[3] ={ 35, 35, -50 }; //Sun position is global so as light position is the same as Sun Position
+
+
+void KeyOperations()
+{
+	if(!GameStarted)
+	{
+		if (keyStates['W'] || keyStates['w'])
+		{
+			if(!ModeSelect)
+				ModeSelect = 2;
+			else
+				ModeSelect--;
+			keyStates['W'] = false;
+			keyStates['w'] = false;
+		}
+		if (keyStates['S'] || keyStates['s'])
+		{
+			ModeSelect=(ModeSelect+1)%3;
+			keyStates['S'] = false;
+			keyStates['s'] = false;
+		}
+		if (keyStates[13])
+		{
+			GameStarted = 1;
+			switch(ModeSelect)
+			{
+				case 0:
+					AsteroidSpeed = 0,5;
+				case 1:
+					AsteroidSpeed = 0,7;
+				case 2:
+					AsteroidSpeed = 1;
+			}
+		}
+	}
+	if(keyStates['p'] || keyStates['P'])
+		Pause = 1 - Pause;		//Toggle Pause
+	if (GameStarted)
+	{
+		if(keyStates['q'] || keyStates['Q'])
+			exit(0);
+		if(keyStates['j'] || keyStates['J'])
+			RotateY += 2;			//Camera manipulation
+		if(keyStates['l'] || keyStates['L'])
+			RotateY -= 2;			//Camera manipulation
+		if(keyStates['i'] || keyStates['I'])
+	 		RotateX += 2;			//Camera manipulation
+		if(keyStates['k'] || keyStates['K'])
+			RotateX -= 2;			//Camera manipulation
+	}
+	if(!Pause && !ColisionFlag && GameStarted)
+	{
+		if(keyStates['w'] || keyStates['W'])
+		{
+			TranslateY -= 0.9f;	//Move upwards by 0.9
+			if (Ytilt <= 35)		//Tilt plane upwards with a maximum 36.8% angle
+				Ytilt += 2;
+		}
+		if(keyStates['s'] || keyStates['S'])
+		{
+			TranslateY += 0.9f;	//Move downwards by 0.9
+			if (Ytilt >= -35)	//Tilt plane downwards with a maximum -36.8% angle
+				Ytilt -= 2;
+		}
+		if(keyStates['a'] || keyStates['A'])
+		{
+			TranslateX += 0.9f;	//Move SideWays by 0.9
+			if (Xtilt <= 35)	//Tilt plane camera-left with a maximum 36.8% angle
+				Xtilt += 2;
+		}
+		if(keyStates['d'] || keyStates['D'])
+		{
+			TranslateX -= 0.9f;	//Move SideWays by 0.9
+			if (Xtilt >= -35)	//Tilt plane camera-righr with a maximum 36.8% angle
+				Xtilt -= 2;
+		}
+	}
+}
 
 void resetAsteroid()
 {
@@ -373,13 +452,13 @@ bool loadOBJ(model *md){
 
 void Render()
 {
+	KeyOperations();
 	glEnable (GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glShadeModel (GL_FLAT);
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity();
-
 	Lives();
 	glRotatef(RotateY, 0, 1, 0); //Change camera Y view when pressing  i || k
 	glRotatef(RotateX, 1, 0, 0); //Change camera X view when pressing  j || l
@@ -464,6 +543,8 @@ void Render()
 		glPopMatrix();
 	}
 	glutSwapBuffers();
+	glLoadIdentity(); // Load the Identity Matrix to reset our drawing locations 
+	glFlush(); // Flush the OpenGL buffers to the window
 }
 
 //-----------------------------------------------------------
@@ -518,98 +599,16 @@ void Idle()
 	glutPostRedisplay();//Re display changes
 }
 
-void Keyboard(unsigned char key, int x, int y)
+void KeyboardPressed(unsigned char key, int x, int y)
 {
-	if(key == 'p' || key == 'P')
-		Pause = 1 - Pause;		//Toggle PauseS
-	if (GameStarted)
-	{
-		switch (key)
-		{
-		case 'q':
-		case 'Q':
-			exit(0);
-			break;
-		case 'j':
-		case 'J':
-			RotateY += 2;			//Camera manipulation
-			break;
-		case 'l':
-		case 'L':
-			RotateY -= 2;			//Camera manipulation
-			break;
-		case 'i':
-		case 'I':
-			RotateX += 2;			//Camera manipulation
-			break;
-		case 'k':
-		case 'K':
-			RotateX -= 2;			//Camera manipulation
-			break;
-		default:
-			break;
-		}
-	}
-	if(!Pause && !ColisionFlag && GameStarted)
-	{
-		switch(key)
-		{
-			case 'w':
-			case 'W':
-				TranslateY -= 0.9f;	//Move upwards by 0.9
-				if (Ytilt <= 35)		//Tilt plane upwards with a maximum 36.8% angle
-					Ytilt += 2;
-				break;
-			case 's':
-			case 'S':
-				TranslateY += 0.9f;	//Move downwards by 0.9
-				if (Ytilt >= -35)	//Tilt plane downwards with a maximum -36.8% angle
-					Ytilt -= 2;
-				break;
-			case 'a':
-			case 'A':
-				TranslateX += 0.9f;	//Move SideWays by 0.9
-				if (Xtilt <= 35)	//Tilt plane camera-left with a maximum 36.8% angle
-					Xtilt += 2;
-				break;
-			case 'd':
-			case 'D':
-				TranslateX -= 0.9f;	//Move SideWays by 0.9
-				if (Xtilt >= -35)	//Tilt plane camera-righr with a maximum 36.8% angle
-					Xtilt -= 2;
-				break;
-		}
-	}
-	else if(!GameStarted)
-	{
-		switch(key)
-		{
-			case 'w':
-			case 'W':
-				if(!ModeSelect)
-					ModeSelect = 2;
-				else
-					ModeSelect--;
-				break;
-			case 's':
-			case 'S':
-				ModeSelect=(ModeSelect+1)%3;
-				break;
-			case 13:
-				GameStarted = 1;
-				switch(ModeSelect)
-				{
-					case 0:
-						AsteroidSpeed = 0,5;
-					case 1:
-						AsteroidSpeed = 0,7;
-					case 2:
-						AsteroidSpeed = 1;
-				}
-				break;
-		}
-	}
+	keyStates[key] = true;
 }
+
+void KeyboardUnPressed (unsigned char key, int x, int y) 
+{  
+	keyStates[key] = false; // Set the state of the current key to not pressed  
+}  
+
 
 //-----------------------------------------------------------
 
