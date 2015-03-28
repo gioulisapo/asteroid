@@ -19,7 +19,7 @@ model md;
 bool* keyStates = new bool[256]; // Create an array of boolean values of length 256 (0-255)
 int LifeRemaining = 3;
 int ModeSelect = 0;
-int AsteroidSpeed;
+float AsteroidSpeed;
 static int GameStarted = 0;
 static int asteroidFlag = 0;
 static int AsteroidSize_1 =5;
@@ -70,16 +70,21 @@ void KeyOperations()
 		}
 		if (keyStates[13])
 		{
-			GameStarted = 1;
 			switch(ModeSelect)
 			{
 				case 0:
-					AsteroidSpeed = 0,5;
+					AsteroidSpeed = 0.5;
+					break;
 				case 1:
-					AsteroidSpeed = 0,7;
+					AsteroidSpeed = 0.7;
+					break;
 				case 2:
 					AsteroidSpeed = 1;
+					break;
+				default:
+					AsteroidSpeed = 0.01;
 			}
+			GameStarted = 1;
 		}
 	}
 	if(keyStates['p'] || keyStates['P'])

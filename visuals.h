@@ -43,7 +43,9 @@ void ReadFile(model*);
 void DisplayModel(model);
 // Function for displaying a model
 
-void Keyboard(unsigned char key,int x,int y);
+void KeyOperations();
+void KeyboardPressed(unsigned char key,int x,int y);
+void KeyboardUnPressed(unsigned char key,int x,int y);
 // Function for handling keyboard events.
 
 

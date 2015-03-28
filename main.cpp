@@ -43,12 +43,11 @@ int main(int argc, char* argv[])
   // Callbacks for the GL and GLUT events:
 
   // The rendering function 
+  glutKeyboardFunc(KeyboardPressed);
+  glutKeyboardUpFunc(KeyboardUnPressed); // Tell GLUT to use the method "keyUp" for key up events 
   glutDisplayFunc(Render);
   glutReshapeFunc(Resize);
   glutIdleFunc(Idle);
-  glutKeyboardFunc(Keyboard);
- 
-
   glEnable(GL_DEPTH_TEST);
   //Enter main event handling loop
   glutMainLoop();
