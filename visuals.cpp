@@ -661,7 +661,8 @@ void DisplayModel(model md)
 {
 
 	glPushMatrix();
-	AsteroidSize += (0.0002*AsteroidSpeed);
+	if(!ColisionFlag)
+		AsteroidSize += (0.0002*AsteroidSpeed);
 	glScalef(AsteroidSize, AsteroidSize, AsteroidSize);
 	glBegin(GL_TRIANGLES);
 	glColor3fv(Gray);
